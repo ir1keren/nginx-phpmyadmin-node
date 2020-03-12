@@ -1,0 +1,2 @@
+#!/bin/sh
+mysqld --user=mysql --skip-name-resolve --skip-host-cache --skip-slave-start --debug-gdb
