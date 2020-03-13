@@ -15,7 +15,7 @@ LABEL org.opencontainers.image.created=$BUILD_DATE \
       org.opencontainers.image.revision=$VCS_REF \
       org.opencontainers.image.source="https://github.com/ir1keren/nginx-phpmyadmin-node" \
       org.opencontainers.image.url="https://github.com/ir1keren/nginx-phpmyadmin-node" \
-      org.opencontainers.image.schema-version="1.0.0-rc.1" \
+      org.opencontainers.image.schema-version="1.0.0-rc.2" \
       org.opencontainers.image.license="Apache-2.0"
 
 ARG PHP_VERSION
@@ -25,9 +25,8 @@ ARG PMA_HOST
 ARG PMA_PORT
 ARG MYSQL_ROOT_PASSWORD
 
-RUN apk --update add curl unzip mariadb mariadb-client
-COPY init_db.sh /tmp/init_db.sh 
-RUN chmod 0755 /tmp/init_db.sh
+RUN apk --update add curl
+RUN apk add mariadb mariadb-client
 COPY ./etc/my.cnf /tmp/my.cnf
 
 RUN rm -rf /etc/my.cnf.d/* /usr/data/test/db.opt /usr/share/mariadb/README* /usr/share/mariadb/COPYING* /usr/share/mariadb/*.cnf /usr/share/terminfo \
@@ -35,11 +34,10 @@ RUN rm -rf /etc/my.cnf.d/* /usr/data/test/db.opt /usr/share/mariadb/README* /usr
     && chown mysql:mysql /etc/my.cnf.d/ /run/mysqld /usr/share/mariadb/mysql_system_tables_data.sql
 
 RUN mv /tmp/my.cnf /etc/my.cnf.d/
-RUN /tmp/init_db.sh
 
 #USER root
 COPY ./etc/services.d/mysqld/ /etc/services.d/mysqld/
-RUN chmod 0755 /etc/services.d/mysqld && chmod 0755 /etc/services.d/mysqld/run
+RUN chmod 0755 -R /etc/services.d/mysqld
 
 WORKDIR /build
 
@@ -83,11 +81,12 @@ RUN apk add \
 		php7-zip \
 		php7-zlib \
         php7-phalcon \
-		mariadb-client \
-        nodejs \
+		nodejs \
         npm \
 		git \
 		nano
+
+VOLUME [ "/var/lib/mysql" ]
 
 RUN add-contenv \
 		PMA_VERSION=${PMA_VERSION} \
